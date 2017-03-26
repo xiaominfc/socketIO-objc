@@ -21,3 +21,7 @@ SocketIOClient* socket = [[SocketIOClient alloc] initWithSocketURL:url config:@{
 [self.socket connect];
 
 ```
+
+## Thanks for
+[0nlyoung7](https://github.com/0nlyoung7/socket.io-client-objc)
+[socketio](https://github.com/socketio/socket.io-client-swift)
