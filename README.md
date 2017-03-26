@@ -2,7 +2,8 @@
 support socket.io 1.0 and objective-c implemention
 
 
-'''
+## Objective-c Example
+```objective-c
 NSURL* url = [[NSURL alloc] initWithString:@"http://localhost:3007"];
 
 SocketIOClient* socket = [[SocketIOClient alloc] initWithSocketURL:url config:@{@"log": @YES}];
@@ -19,4 +20,4 @@ SocketIOClient* socket = [[SocketIOClient alloc] initWithSocketURL:url config:@{
 
 [self.socket connect];
 
-'''
+```
