@@ -28,7 +28,7 @@
     return self;
 }
 
-- (NSUInteger) advance:(NSUInteger) by __attribute__((warn_unused_result)){
+- (NSUInteger) advance:(NSUInteger) by{
     self.currentIndex = self.currentIndex + by;
     return self.currentIndex;
 }
@@ -48,14 +48,9 @@
 
     
     NSRange range = [substring rangeOfString:keyword];
-    
-    NSLog(@"range: %@", NSStringFromRange(range));
-    
+
     if (range.location == NSNotFound) {
-        NSLog(@"string was not found");
         return substring;
-    } else {
-        NSLog(@"position %lu", (unsigned long)range.location);
     }
     
     [self advance:( range.location + [keyword length])];
@@ -67,7 +62,6 @@
     NSRange range = [substring rangeOfString:keyword];
     
     if (range.location == NSNotFound) {
-        NSLog(@"string was not found");
         return -1;
     } else {
         return (unsigned int)range.location;
