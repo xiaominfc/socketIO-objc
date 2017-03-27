@@ -101,6 +101,10 @@ static const size_t  MaxFrameSize        = 32;
 @interface WebSocket()
 @property(nonatomic,strong)UnsafeBufferPointerTest *emptyBuffer;
 
+@property(nonatomic)CFReadStreamRef readStream;
+@property(nonatomic)CFWriteStreamRef writeStream;
+//@property(nonatomic, strong)CFReadStreamRef readStream;
+
 @end
 
 
@@ -249,13 +253,13 @@ static const size_t  MaxFrameSize        = 32;
 /////////////////////////////////////////////////////////////////////////////
 //Sets up our reader/writer for the TCP stream.
 - (void)initStreamsWithData:(NSData*)data port:(NSNumber*)port {
-    CFReadStreamRef readStream = NULL;
-    CFWriteStreamRef writeStream = NULL;
-    CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.url.host, [port intValue], &readStream, &writeStream);
+    //CFReadStreamRef readStream = NULL;
+    //CFWriteStreamRef writeStream = NULL;
+    CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.url.host, [port intValue], &_readStream, &_writeStream);
     
-    self.inputStream = (__bridge_transfer NSInputStream *)readStream;
+    self.inputStream = (__bridge_transfer NSInputStream *)_readStream;
     self.inputStream.delegate = self;
-    self.outputStream = (__bridge_transfer NSOutputStream *)writeStream;
+    self.outputStream = (__bridge_transfer NSOutputStream *)_writeStream;
     self.outputStream.delegate = self;
     if([self.url.scheme isEqualToString:@"wss"] || [self.url.scheme isEqualToString:@"https"]) {
         [self.inputStream setProperty:NSStreamSocketSecurityLevelNegotiatedSSL forKey:NSStreamSocketSecurityLevelKey];
@@ -283,8 +287,8 @@ static const size_t  MaxFrameSize        = 32;
     self.isRunLoop = YES;
     _readyToWrite = YES;
     
-    CFReadStreamSetDispatchQueue(readStream, sharedWorkQueue);
-    CFWriteStreamSetDispatchQueue(writeStream, sharedWorkQueue);
+    CFReadStreamSetDispatchQueue(_readStream, sharedWorkQueue);
+    CFWriteStreamSetDispatchQueue(_writeStream, sharedWorkQueue);
     
     //[self.inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     //[self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
@@ -372,15 +376,23 @@ static const size_t  MaxFrameSize        = 32;
     } else {
         [self.writeQueue cancelAllOperations];
     }
-
     [self cleanupStream];
     [self doDisconnect:error];
 }
 
 - (void)cleanupStream {
     NSLog(@"cleanupStream");
-    [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    
+    if(_readStream) {
+        CFReadStreamSetDispatchQueue(_readStream, nil);
+    }
+    
+    if(_writeStream) {
+        CFWriteStreamSetDispatchQueue(_writeStream, nil);
+    }
+    
+    //[self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    //[self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     
     [self.outputStream close];
     [self.inputStream close];
